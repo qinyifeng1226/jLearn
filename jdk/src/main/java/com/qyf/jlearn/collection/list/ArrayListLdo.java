@@ -9,5 +9,9 @@ package com.qyf.jlearn.collection.list;
  */
 public class ArrayListLdo {
 
+    public static void main(String[] args) {
+
+    }
+
 
 }
