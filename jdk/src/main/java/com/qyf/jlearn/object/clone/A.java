@@ -12,6 +12,13 @@ public class A implements Cloneable {
     private int a;
     private B b;
 
+    public A() {
+    }
+
+    public A(int a) {
+        this.a = a;
+    }
+
     public int getA() {
         return a;
     }
