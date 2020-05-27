@@ -1,5 +1,7 @@
 package com.qyf.jlearn.collection.list;
 
+import java.util.Stack;
+
 /**
  * 类描述：
  * <p>
@@ -13,4 +15,19 @@ package com.qyf.jlearn.collection.list;
  * @since 2020/5/27 16:14
  */
 public class StackTest {
+    public static void main(String[] args) {
+        Stack<Integer> stack = new Stack<>();
+        stack.add(1);
+        stack.push(2);
+        stack.push(3);
+        System.out.println(stack);
+
+        // 返回最后一个顶端数据：3
+        System.out.println(stack.peek());
+
+        // 检索并删除此列表的头（最后一个元素）
+        assert stack.pop() == 3 && stack.size() == 2;
+        System.out.println(stack);
+
+    }
 }
