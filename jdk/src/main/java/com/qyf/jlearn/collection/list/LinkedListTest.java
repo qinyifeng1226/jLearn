@@ -7,6 +7,10 @@ import java.util.List;
 
 /**
  * 类描述：
+ * <p>
+ * LinkedList 是双向链表，也即每个元素都有指向前后元素的指针。既然是链表那么顺序读取的效率非常高，而随机读取的效率较低。
+ * 当随机获取一个 index 位元素时，链表先比较 index 和链表长度 1/2 的大小，小于时从链表头部查找元素，大于时就从链表尾部查找元素。
+ * 对比 ArrayList 如果随机读取数据较多时使用 ArrayList 性能高（因为根据数组索引查询），插入删除较多时使用 LinkedList 性能高（不用重新拷贝数据，涉及节点变更较少）
  *
  * @author qinyifeng
  * @version v1.0
@@ -15,6 +19,9 @@ import java.util.List;
 public class LinkedListTest {
 
     public static void main(String[] args) {
+        // 50
+        System.out.println(100 >> 1);
+
         LinkedList<Integer> list = new LinkedList<>();
         list.add(1);
         list.add(1, 11);
@@ -59,7 +66,13 @@ public class LinkedListTest {
 
         // 检索并删除此列表的头（第一个元素）
         list.remove();
-        assert list.peek() == 0 && list.size() == 14;
+        System.out.println(list);
+        // 检索但不删除此列表的头（第一个元素）
+        assert list.peek() == 11 && list.size() == 14;
+
+        // 当随机获取一个 index 位元素时，链表先比较 index 和链表长度 1/2 的大小（index < (size >> 1)），小于时从链表头部查找元素，大于时就从链表尾部查找元素。
+        System.out.println(list.get(3));
+
     }
 
 }

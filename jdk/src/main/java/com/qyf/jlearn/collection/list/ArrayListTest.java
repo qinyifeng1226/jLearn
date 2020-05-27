@@ -8,6 +8,10 @@ import java.util.function.Consumer;
 
 /**
  * 类描述：
+ * <p>
+ * 有序，可重复，内部是通过 Array 实现
+ * 对数组列表进行插入、删除操作时都需要对数组进行拷贝并重排序。所以如果能知道大概存储多少数据时，尽量初始化初始容量，提升性能
+ * 对比 ArrayList 如果随机读取数据较多时使用 ArrayList 性能高（因为根据数组索引查询），插入删除较多时使用 LinkedList 性能高（不用重新拷贝数据，涉及节点变更较少）
  *
  * @author qinyifeng
  * @version v1.0
