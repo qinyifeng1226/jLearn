@@ -11,6 +11,11 @@ import java.util.Vector;
  * <p>
  * 与 ArrayList 一样也是通过数组实现的，不同的是 Vector 是线程安全的，也即同一时间下只能有一个线程访问 Vector，线程安全的同时带来了性能的耗损，所以一般都使用 ArrayList。
  * Vector 的扩容也与 ArrayList 不同，可以设置扩容值，默认每次扩容原来的一倍。
+ * 底层是数组结构array，与ArrayList相同，查询速度快，增删改慢
+ * <p>
+ * 如果集合中的元素数量大于当前集合数组的长度时，Vector的增长率是目前数组长度的100%，而ArryaList增长率为目前数组长度的50%。
+ * 所以，如果集合中使用数据量比较大的数据，用Vector有一定优势
+ * 线程同步ArrayList是线程不同步，所以Vector线程安全，但是因为每个方法都加上了synchronized，所以在效率上小于ArrayList
  *
  * @author qinyifeng
  * @version v1.0
