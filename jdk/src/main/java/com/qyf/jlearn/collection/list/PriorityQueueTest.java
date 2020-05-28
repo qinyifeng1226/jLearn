@@ -68,6 +68,17 @@ public class PriorityQueueTest {
         System.out.println(q.poll());  //3
         System.out.println(q.poll());  //4
         System.out.println(q.poll());  //5
+
+        //5,6,7
+        System.out.println(q);
+
+        /**
+         * 1、删除的是最后一个元素。直接删除即可，不需要调整。
+         * 2. 删除的不是最后一个元素，从删除点开始以最后一个元素为参照调用一次siftDown()，如果当前位置已是末尾则没有发生移动，继续调用siftUp()，判断该节点是否跟父节点交换
+         */
+        q.remove("6");
+        System.out.println(q);
+
     }
 
 }
