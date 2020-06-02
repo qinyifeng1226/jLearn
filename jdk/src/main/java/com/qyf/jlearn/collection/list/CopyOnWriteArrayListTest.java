@@ -1,7 +1,10 @@
 package com.qyf.jlearn.collection.list;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * 类描述：
@@ -54,15 +57,63 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class CopyOnWriteArrayListTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        List<Integer> arrayList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
         CopyOnWriteArrayList<String> cowList = new CopyOnWriteArrayList();
         cowList.add("1");
         cowList.addAll(Arrays.asList("2", "3", "4", "5"));
         System.out.println(cowList);
-
         System.out.println(cowList.get(2));
 
+        ExecutorService pool2 = new ThreadPoolExecutor(2, 5, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+        ExecutorService pool = Executors.newFixedThreadPool(10);
 
+
+        // 写
+        for (int i = 0; i < 1; i++) {
+            pool.execute(() -> {
+                for (int j = 0; j < 1000; j++) {
+                    arrayList.add(j);
+                    cowList.add("cow_" + j);
+                    System.out.println("arrayList1 size: " + arrayList.size());
+                }
+            });
+        }
+
+        Thread.sleep(1);
+        System.out.println("arrayList2 size: " + arrayList.size());
+        System.out.println("cowList2 size: " + cowList.size());
+
+        // 此时拿到的集合可能还未添加完1000个元素，只添加了部分，Itr 迭代的数据是集合源数据，所以添加与查询互相干扰
+        Iterator<Integer> iter = arrayList.iterator();
+        // COWIterator 迭代的数据是拷贝的快照snapshot，所以添加与查询互不干扰
+        Iterator<String> cowiter = cowList.iterator();
+
+        // 读
+        for (int i = 0; i < 1; i++) {
+            int finalI = i;
+            pool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    // 此时由于元素可能还在继续添加，所以 modCount != expectedModCount 可能不相等，导致异常
+                    while (iter.hasNext()) {
+                        System.out.println(Thread.currentThread() + "====" + iter.next());
+                    }
+                    // COWIterator 迭代的数据是拷贝的快照snapshot，所以添加与查询互不干扰
+                    while (cowiter.hasNext()) {
+                        System.out.println(Thread.currentThread() + "====" + cowiter.next());
+                    }
+                }
+            });
+        }
+
+        Thread.sleep(500);
+
+        System.out.println("arrayList size: " + arrayList.size());
+        System.out.println("cowList size: " + cowList.size());
+
+        pool.shutdown();
+        pool2.shutdown();
     }
 
 }
