@@ -1,5 +1,7 @@
 package com.qyf.jlearn.concurrent.locks;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * 类描述：
  * ReentrantLock是JDK1.5引入的，它拥有与synchronized相同的并发性和内存语义，并提供了超出synchonized的其他高级功能(例如，中断锁等候、条件变量等)，并且使用ReentrantLock比synchronized能获得更好的可伸缩性。
@@ -23,6 +25,49 @@ package com.qyf.jlearn.concurrent.locks;
  * @version v1.0
  * @since 2020/6/5 16:06
  */
-public class ReentrantLockTest {
+public class ReentrantLockTest extends Thread {
 
+    private static int count = 100000;
+
+    public static ReentrantLock lock = new ReentrantLock();
+    public static int i = 0;
+
+    public ReentrantLockTest(String name) {
+        super.setName(name);
+    }
+
+    /**
+     * 1、当使用ReentrantLock锁的时候，不论任何时候，输出结果都是200000
+     * 2、当不使用ReentrantLock锁的时候，输出结果可能不等于200000，刚刚测试了一把是199968
+     */
+
+    @Override
+    public void run() {
+        for (int j = 0; j < count; j++) {
+            lock.lock();
+            try {
+                System.out.println(this.getName() + " " + i);
+                i++;
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    /**
+     * @param args
+     * @throws InterruptedException
+     */
+    public static void main(String[] args) throws InterruptedException {
+        ReentrantLockTest test1 = new ReentrantLockTest("thread1");
+        ReentrantLockTest test2 = new ReentrantLockTest("thread2");
+
+        test1.start();
+        test2.start();
+        // 先执行子线程，再执行主线程
+        test1.join();
+        test2.join();
+        // 执行主线程
+        System.out.println("最后的执行结果：" + i);
+    }
 }
