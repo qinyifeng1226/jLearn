@@ -1,6 +1,7 @@
 package com.qyf.jlearn.object.clone;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 类描述：
@@ -78,6 +79,8 @@ public class Person implements Cloneable {
         System.out.println("kobe_bak=" + kobe_bak.toString());
 
         assert kobe.getBirth() != kobe_bak.getBirth() : "two birthdate was same";
+
+        System.out.println(Objects.hashCode(kobe));
     }
 
 }

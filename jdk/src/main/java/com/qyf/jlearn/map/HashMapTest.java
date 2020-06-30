@@ -24,6 +24,8 @@ package com.qyf.jlearn.map;
  * 在使用哈希表的集合中我们都认为他们的增删改查操作的时间复杂度都是O(1)的，不过常数项很大，因为哈希函数在进行计算的代价比较高,HashMap和Hashtable类似，
  * 不同之处在于HashMap是非同步的，并且允许null，即null value和null key。，但是将HashMap视为Collection时（values()方法可返回Collection），
  * 其迭代子操作时间开销和HashMap 的容量成比例。因此，如果迭代操作的性能相当重要的话，不要将HashMap的初始化容量设得过高，或者load factor过低。
+ * <p>
+ * https://www.cnblogs.com/qingfei1994/p/9151915.html
  *
  * @author qinyifeng
  * @version v1.0
