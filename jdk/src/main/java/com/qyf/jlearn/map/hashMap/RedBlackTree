@@ -1,0 +1,293 @@
+https://blog.csdn.net/Troy_kfrozen/article/details/78890297
+
+发现JDK1.8对于HashMap的实现引入了红黑树来处理哈希冲突以提高性能（戳这里，有详述），而红黑树的数据结构和操作都是较为复杂的，自己看得过程中有些地方也反复了多次。。。俗话说得好，好记性不如烂笔头，因此决定写下这篇笔记供自己和需要的人日后参考。在开始之前，首先要感谢张拭心同学的这两篇关于红黑树和二叉查找树的文章：
+
+http://blog.csdn.net/u011240877/article/details/53242179
+
+http://blog.csdn.net/u011240877/article/details/53329023
+
+这两篇文章讲得十分详细，使我受益匪浅，在这里也强烈推荐大家阅读一下。由于拭心同学的文章在分析二叉查找树的查找，插入和删除时引用的是递归的实现，为了不重复，本文分析时将采用循环的实现，为大家提供另一种思路。
+
+OK，正式开始，何为红黑树？红黑树（Red-Black Tree） 是一种自平衡二叉查找树，其每个节点都带有黑或红的颜色属性。由于它的本质也是一种二叉查找树，因此它的查找，插入和删除操作均以二叉查找树的对应操作作为基础；但由于红黑树自身要保证平衡（也即要始终满足其五条特性，这个下文会有详述），每次插入和删除之后它都要进行额外的调整，以恢复自身的平衡，这是它与普通二叉查找树不同的地方，也正因为如此，红黑树的查找，插入和删除操作在最坏情况下的时间复杂度也能保证为O(logN)，其中N为树中元素个数。
+
+既然红黑树本质是二叉查找树，那么就有必要先来看一下二叉查找树的相关知识。
+
+二叉查找树
+
+二叉查找树（Binary Search Tree），又名二叉排序树，二叉搜索树，B树。顾名思义，它的节点是可比较的并且具有以下性质：
+
+a. 若左子树不为空，则根节点的值大于其所有左子树中节点的值；
+b. 若右子树不为空，则根节点的值小于或等于其所有右子树中节点的值；
+c. 左右子树也分别为二叉查找树；
+d. 没有键值相等的节点。
+
+由于以上性质，中序遍历二叉查找树可得到一个关键字的有序序列，一个无序序列可以通过构造一棵二叉查找树变成一个有序序列，构造树的过程即为对无序序列进行查找的过程。每次插入的新的结点都是二叉查找树上新的叶子结点，在进行插入操作时，不必移动其它结点，只需改动某个结点的指针，由空变为非空即可。搜索、插入、删除的复杂度等于树高，期望 O(logN)，最坏 O(N)（数列有序，树退化成线性表）。
+
+这里先给出一个二叉查找树节点的结构，下文代码中就用它作为树节点的类：
+
+class BSTNode{
+    int value;  //节点的值
+    BSTNode left;  //节点的左子树
+    BSTNode right;  //节点的右子树
+    BSTNode parent;  //节点的父节点
+
+    BSTNode(int value, BSTNode parent) {
+        this.value = value;
+        this.parent = parent;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+          //两个节点的value相等，则认为两个节点相等
+        return (obj instanceof BSTNode) && (((BSTNode) obj).value == this.value);
+    }
+}
+
+下面就分别看一下二叉查找树的查找，插入和删除操作的实现，此处采用循环来实现。
+
+查找
+在二叉搜索树T中查找key的过程为：
+
+a. 若T是空树，则搜索失败，否则：
+b. 若key等于T的根节点的数据域之值，则查找成功；否则：
+c. 若key小于T的根节点的数据域之值，则搜索左子树；否则：
+d. 查找右子树。
+
+
+####红黑树
+
+上文提到过，红黑树是每个节点都带有颜色属性（红或黑）的二叉查找树。在二叉查找树性质的基础上，红黑树额外规定了以下五条性质。这些约束确保了红黑树的关键特性：从根到叶子的最长的可能路径不多于最短的可能路径的两倍长。结果是这个树大致上是平衡的。因为操作比如插入、删除和查找某个值的最坏情况时间都要求与树的高度成比例，这个在高度上的理论上限允许红黑树在最坏情况下都是高效的，而不同于普通的二叉查找树。
+
+要知道为什么这些性质确保了这个结果，注意到性质4导致了路径不能有两个毗连的红色节点就足够了。最短的可能路径都是黑色节点，最长的可能路径有交替的红色和黑色节点。因为根据性质5所有最长的路径都有相同数目的黑色节点，这就表明了没有路径能多于任何其他路径的两倍长。
+
+红黑树的查找操作与普通二叉查找树的完全相同，而在进行插入和删除时则有可能导致其不再满足红黑树的性质，因此在这种情况下需要通过节点颜色变更和不超过三次的节点旋转（包括左旋和右旋，对于插入操作最多旋转两次）来使其恢复平衡，操作复杂度为O(logN)。下面一一来分析。
+
+五条性质
+
+a. 每个结点非黑即红；
+b. 根结点是黑的；
+c. 每个叶结点（叶结点即指树尾端NIL指针或NULL结点）都是黑的；
+d. 如果一个结点是红的，那么它的两个儿子都是黑的；
+e. 对于任一结点而言，其到叶结点树尾端NIL指针的每一条路径都包含相同数目的黑结点。
+
+只有满足这五条性质的二叉查找树才是一棵红黑树，那么当有插入删除操作导致树的平衡被破坏时，就需要通过下面的节点左右旋转操作来重新保证这五条性质，从而恢复红黑树的平衡。
+
+左旋
+首先说明的是，左旋或右旋都是针对一个节点的操作，而非以整棵树为对象。
+
+先来看对节点X的左旋，X是红黑树中的一个节点，假设其左右孩子都存在，并且左孩子为T，右孩子为Z，即X.left=T, X.right=Z。那么对X左旋的过程为：
+a. 将X变为其右孩子Z的左孩子，即Z替代X成为这一部分树的根节点；
+b. 将Z原本的左孩子（可能为空）变为X的新右孩子；
+c. 让Z与X原先的父节点相认（若X原先没有父节点，则Z成为整颗红黑树的新的根节点）。
+
+右旋
+针对节点X的右旋
+a. 将X变为其左孩子T的右孩子，即T替代X成为这一部分树的根节点；
+b. 将T原本的右孩子（可能为空）变为X的新左孩子；
+c. 让T与X原先的父节点相认（若X原先没有父节点，则T成为整颗红黑树的新的根节点）。
+
+
+//x就是上文中说到的replacement
+static <K,V> TreeNode<K,V> balanceDeletion(TreeNode<K,V> root, TreeNode<K,V> x) {
+    for (TreeNode<K,V> xp, xpl, xpr;;)  {
+        if (x == null || x == root)
+            return root; //x为空或x为根节点，返回
+        else if ((xp = x.parent) == null) {
+            x.red = false; //x为根节点，染成黑色，返回
+            return x;
+        }
+        else if (x.red) {
+            x.red = false;
+            return root; //x为红色，则无需调整，返回
+        }
+        //x为其父节点的左孩子
+        else if ((xpl = xp.left) == x) {
+            if ((xpr = xp.right) != null && xpr.red) { //有红色的兄弟节点xpr，则父亲节点xp必为黑色
+                xpr.red = false; //兄弟染成黑色
+                xp.red = true; //父亲染成红色
+                root = rotateLeft(root, xp); //对父节点xp做左旋转
+                xpr = (xp = x.parent) == null ? null : xp.right; //重新将xp指向原先x的父节点，xpr则指向xp新的右孩子
+            }
+            if (xpr == null)
+                x = xp; //若新的xpr为空，即上图中L节点为空，则向上继续调整，将x的父节点xp作为新的x继续循环
+            else {
+                //此时的xpr就是上图中的节点L，sl和sr就是其左右孩子
+                TreeNode<K,V> sl = xpr.left, sr = xpr.right;
+                if ((sr == null || !sr.red) &&
+                    (sl == null || !sl.red)) {
+                    xpr.red = true; //若sl和sr都为黑色或者不存在，即xpr没有红色孩子，则将xpr染红
+                    x = xp; //本轮结束，继续向上循环，这就是上图中的情况，新的x即为红色的P节点，下一次循环时P会被染黑，然后循环结束
+                }
+                else {
+                    //否则的话，就需要进一步调整
+                    //现在的情况是被删除的X的路径需要一个新的黑色节点，即上图中P的左子树中，只能考虑从P的右子树搬运
+                    //所以最终要做的是对P做左旋，但L的左子树sl会在左旋后变为P的右子树，因此在左旋之前需要对sl和sr做处理
+                    if (sr == null || !sr.red) {
+                        if (sl != null) //若左孩子为红，右孩子不存在或为黑
+                            sl.red = false; //左孩子染黑
+                        xpr.red = true; //将xpr染红
+                        root = rotateRight(root, xpr); //此时考虑上图，P和L均为红，于是需要右旋L将黑色的sl换过来
+                        xpr = (xp = x.parent) == null ?
+                            null : xp.right;  //右旋后，xpr指向xp（上图P）的新右孩子，即上一步中的sl
+                    }
+                    if (xpr != null) {
+                        xpr.red = (xp == null) ? false : xp.red; //xpr染成跟父节点一致的颜色，为后面父节点xp的左旋做准备
+                        if ((sr = xpr.right) != null)
+                            sr.red = false; //xpr新的右孩子染黑，防止出现两个红色相连
+                    }
+                    if (xp != null) {
+                        xp.red = false; //将xp染黑，并对其左旋，这样就能保证被删除的X所在的路径又多了一个黑色节点，从而达到恢复平衡的目的
+                        root = rotateLeft(root, xp);
+                    }
+                    //到此调整已经完毕，故将x置为root，进入下一次循环后将直接退出
+                    x = root;
+                }
+            }
+        }
+        //x为其父节点的右孩子，与上述过程对称
+        else { // symmetric
+            if (xpl != null && xpl.red) {
+                xpl.red = false;
+                xp.red = true;
+                root = rotateRight(root, xp);
+                xpl = (xp = x.parent) == null ? null : xp.left;
+            }
+            if (xpl == null)
+                x = xp;
+            else {
+                TreeNode<K,V> sl = xpl.left, sr = xpl.right;
+                if ((sl == null || !sl.red) &&
+                    (sr == null || !sr.red)) {
+                    xpl.red = true;
+                    x = xp;
+                }
+                else {
+                    if (sl == null || !sl.red) {
+                        if (sr != null)
+                            sr.red = false;
+                        xpl.red = true;
+                        root = rotateLeft(root, xpl);
+                        xpl = (xp = x.parent) == null ?
+                            null : xp.left;
+                    }
+                    if (xpl != null) {
+                        xpl.red = (xp == null) ? false : xp.red;
+                        if ((sl = xpl.left) != null)
+                            sl.red = false;
+                    }
+                    if (xp != null) {
+                        xp.red = false;
+                        root = rotateRight(root, xp);
+                    }
+                    x = root;
+                }
+            }
+        }
+    }
+}
+
+以上就是HashMap中对于红黑树删除后调整的实现，逻辑很绕，但最终的目的就是让整棵树再次满足红黑树的5条特性。
+
+最后
+红黑树是一种特殊的二叉查找树，它的五条特性保证了其查找，插入和删除操作的复杂度均为O(logN)。
+红黑树的查找算法和二叉查找树无异，插入和删除也是基于二叉查找树的做法，只是在其基础上需要进行调整以重新恢复树的平衡（主要是重新满足第4，5条特性）。
+由于其有序，快速的特点，红黑树在很多场景下都有被应用，比如Java中的TreeMap，以及Java 8中的HashMap。
+
+
+红黑树的左旋右旋
+      y       右旋--->    x
+   x    γ              α    y
+ α  β         <---左旋     β   γ
+
+红黑树的左右旋是比较重要的操作，左右旋的目的是调整红黑节点结构，转移黑色节点位置，使其在进行插入、删除后仍能保持红黑树的 5 条性质。
+
+比如 X 左旋(右图转成左图)的结果，是让在 Y 左子树的黑色节点跑到 X 右子树去。
+
+我们以 Java 集合框架中的 TreeMap 中的代码来看下左右旋的具体操作方法：
+
+指定节点 x 的左旋 (右图转成左图)：
+
+//这里 p 代表 x
+private void rotateLeft(Entry<K,V> p) {
+    if (p != null) {
+        Entry<K,V> r = p.right; // p 是上图中的 x，r 就是 y
+        p.right = r.left;       // 左旋后，x 的右子树变成了 y 的左子树 β
+        if (r.left != null)
+            r.left.parent = p;  //β 确认父亲为 x
+        r.parent = p.parent;        //y 取代 x 的第一步：认 x 的父亲为爹
+        if (p.parent == null)       //要是 x 没有父亲，那 y 就是最老的根节点
+            root = r;
+        else if (p.parent.left == p) //如果 x 有父亲并且是它父亲的左孩子，x 的父亲现在认 y 为左孩子，不要 x 了
+            p.parent.left = r;
+        else                            //如果 x 是父亲的右孩子，父亲就认 y 为右孩子，抛弃 x
+            p.parent.right = r;
+        r.left = p;     //y 逆袭成功，以前的爸爸 x 现在成了它的左孩子
+        p.parent = r;
+    }
+}
+
+可以看到，x 节点的左旋就是把 x 变成 右孩子 y 的左孩子，同时把 y 的左孩子送给 x 当右子树。
+
+简单点记就是：左旋把右子树里的一个节点（上图 β）移动到了左子树。
+
+指定节点 y 的右旋（左图转成右图）：
+
+private void rotateRight(Entry<K,V> p) {
+    if (p != null) {
+        Entry<K,V> l = p.left;
+        p.left = l.right;
+        if (l.right != null) l.right.parent = p;
+        l.parent = p.parent;
+        if (p.parent == null)
+            root = l;
+        else if (p.parent.right == p)
+            p.parent.right = l;
+        else p.parent.left = l;
+        l.right = p;
+        p.parent = l;
+    }
+}
+同理，y 节点的右旋就是把 y 变成 左孩子 x 的右孩子，同时把 x 的右孩子送给 x 当左子树。
+
+简单点记就是：右旋把左子树里的一个节点（上图 β）移动到了右子树。
+
+了解左旋、右旋的方法及意义后，就可以了解红黑树的主要操作：插入、删除。
+
+红黑树的平衡插入
+红黑树的插入主要分两步：
+
+首先和二叉查找树的插入一样，查找、插入
+然后调整结构，保证满足红黑树状态
+对结点进行重新着色
+以及对树进行相关的旋转操作
+红黑树的插入在二叉查找树插入的基础上，为了重新恢复平衡，继续做了插入修复操作。
+
+总结
+红黑树并不是真正的平衡二叉树，但在实际应用中，红黑树的统计性能要高于平衡二叉树，但极端性能略差。
+
+红黑树的插入、删除调整逻辑比较复杂，但最终目的是满足红黑树的 5 个特性，尤其是 4 和 5。
+
+在插入调整时为了简化操作我们直接把插入的节点涂成红色，这样只要保证插入节点的父节点不是红色就可以了。
+
+而在删除后的调整中，针对删除黑色节点，所在子树缺少一个节点，需要进行弥补或者对别人造成一个黑色节点的伤害。具体调整方法取决于兄弟节点所在子树的情况。
+
+红黑树的插入、删除在树形数据结构中算比较复杂的，理解起来比较难，但只要记住，红黑树有其特殊的平衡规则，而我们为了维持平衡，根据邻树的状况进行旋转或者涂色。
+
+红黑树这么难理解，必定有其过人之处。它的有序、快速特性在很多场景下都有用到，比如 Java 集合框架的 TreeMap, TreeSet 等。
+
+Thanks
+@ coolingxyz 前辈写过数据结构相关的课件，flash 动态演示数据结构算法，可以去看看：
+http://xu-laoshi.cn/shujujiegou/flash.html
+
+一个不错的在线演示添加、删除红黑树：
+http://sandbox.runjs.cn/show/2nngvn8w
+
+《算法导论》
+http://en.wikipedia.org/wiki/Red–black_tree
+http://www.cnblogs.com/skywang12345/p/3245399.html
+http://shmilyaw-hotmail-com.iteye.com/blog/1836431
+http://blog.csdn.net/speedme/article/details/18743445
+http://blog.csdn.net/eson_15/article/details/51144079
+http://blog.csdn.net/v_july_v/article/details/6105630
+http://dongxicheng.org/structure/red-black-tree/
