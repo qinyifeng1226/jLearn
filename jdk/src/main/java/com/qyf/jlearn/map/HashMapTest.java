@@ -99,8 +99,14 @@ public class HashMapTest {
         map2.put(1, new User(1, "user1"));
 
         Map map3 = new HashMap<HashKey, User>();
-        map3.put(new HashKey(1111), new User(111, "user1"));
-        map3.put(new HashKey(1111), new User(222, "user2"));
-
+        for (int i = 0; i < 56; i++) {
+            map3.put(new HashKey(i), new User(i, "user" + i));
+        }
+        //map3.put(new HashKey(1110), new User(110, "user0"));
+        for (int i = 1; i <= 8; i++) {
+            map3.put(new HashKey(1111), new User(111, "user" + i));
+        }
+        map3.put(new HashKey(1111), new User(222, "user"));
+        System.out.println(map3.toString());
     }
 }

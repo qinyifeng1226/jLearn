@@ -1112,6 +1112,78 @@ PS：代码中的第一次调整和第二次调整是将 p 节点和 s 节点进
 
 
 
+/**
+ * 红黑树插入节点后，需要重新平衡
+ * root 当前根节点
+ * x 新插入的节点
+ * 返回重新平衡后的根节点
+ */
+static <K,V> TreeNode<K,V> balanceInsertion(TreeNode<K,V> root, TreeNode<K,V> x) {
+    x.red = true; // 新插入的节点标为红色
+
+    /*
+     * 这一步即定义了变量，又开起了循环，循环没有控制条件，只能从内部跳出
+     * xp：当前节点的父节点、xpp：爷爷节点、xppl：左叔叔节点、xppr：右叔叔节点
+     */
+    for (TreeNode<K,V> xp, xpp, xppl, xppr;;) {
+
+        // 如果父节点为空、说明当前节点就是根节点，那么把当前节点标为黑色，返回当前节点
+        if ((xp = x.parent) == null) { // L1
+            x.red = false;
+            return x;
+        }
+
+        // 父节点不为空
+        // 如果父节点为黑色 或者 【（父节点为红色 但是 爷爷节点为空） -> 这种情况何时出现？】
+        else if (!xp.red || (xpp = xp.parent) == null) // L2
+            return root;
+        if (xp == (xppl = xpp.left)) { // 如果父节点是爷爷节点的左孩子  // L3
+            if ((xppr = xpp.right) != null && xppr.red) { // 如果右叔叔不为空 并且 为红色  // L3_1
+                xppr.red = false; // 右叔叔置为黑色
+                xp.red = false; // 父节点置为黑色
+                xpp.red = true; // 爷爷节点置为红色
+                x = xpp; // 运行到这里之后，就又会进行下一轮的循环了，将爷爷节点当做处理的起始节点
+            }
+            else { // 如果右叔叔为空 或者 为黑色 // L3_2
+                if (x == xp.right) { // 如果当前节点是父节点的右孩子 // L3_2_1
+                    root = rotateLeft(root, x = xp); // 父节点左旋，见下文左旋方法解析
+                    xpp = (xp = x.parent) == null ? null : xp.parent; // 获取爷爷节点
+                }
+                if (xp != null) { // 如果父节点不为空 // L3_2_2
+                    xp.red = false; // 父节点 置为黑色
+                    if (xpp != null) { // 爷爷节点不为空
+                        xpp.red = true; // 爷爷节点置为 红色
+                        root = rotateRight(root, xpp);  //爷爷节点右旋，见下文右旋方法解析
+                    }
+                }
+            }
+        }
+        else { // 如果父节点是爷爷节点的右孩子 // L4
+            if (xppl != null && xppl.red) { // 如果左叔叔是红色 // L4_1
+                xppl.red = false; // 左叔叔置为 黑色
+                xp.red = false; // 父节点置为黑色
+                xpp.red = true; // 爷爷置为红色
+                x = xpp; // 运行到这里之后，就又会进行下一轮的循环了，将爷爷节点当做处理的起始节点
+            }
+            else { // 如果左叔叔为空或者是黑色 // L4_2
+                if (x == xp.left) { // 如果当前节点是个左孩子 // L4_2_1
+                    root = rotateRight(root, x = xp); // 针对父节点做右旋，见下文右旋方法解析
+                    xpp = (xp = x.parent) == null ? null : xp.parent; // 获取爷爷节点
+                }
+                if (xp != null) { // 如果父节点不为空 // L4_2_4
+                    xp.red = false; // 父节点置为黑色
+                    if (xpp != null) { //如果爷爷节点不为空
+                        xpp.red = true; // 爷爷节点置为红色
+                        root = rotateLeft(root, xpp); // 针对爷爷节点做左旋
+                    }
+                }
+            }
+        }
+    }
+}
+
+————————————————
+
 //x就是上文中说到的replacement
 static <K,V> TreeNode<K,V> balanceDeletion(TreeNode<K,V> root, TreeNode<K,V> x) {
     for (TreeNode<K,V> xp, xpl, xpr;;)  {

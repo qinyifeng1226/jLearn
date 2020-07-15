@@ -1,5 +1,6 @@
 package com.qyf.jlearn.map.hashMap;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Objects;
  * @version v1.0
  * @since 2020/7/10 13:47
  */
-public class User {
+public class User implements Comparator<User> {
     private Integer userId;
     private String userName;
 
@@ -38,6 +39,11 @@ public class User {
     }
 
     @Override
+    public int compare(User o1, User o2) {
+        return o1.getUserId() > o2.getUserId() ? 1 : -1;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -49,5 +55,13 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(userId, userName);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                '}';
     }
 }
