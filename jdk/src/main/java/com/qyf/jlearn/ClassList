@@ -3,7 +3,7 @@
 1、java.lang
 
 1) Object 1                  ====OK
-2) String 1
+2) String 1                  ====OK
 3) AbstractStringBuilder 1
 4) StringBuffer 1
 5) StringBuilder 1
@@ -21,7 +21,7 @@
 17) Error 3
 18) Exception 3
 19) Class 4
-19) Constructor
+19) Constructor    ====OK
 20) ClassLoader 4  ====OK
 21) Compiler 4
 22) System 4
