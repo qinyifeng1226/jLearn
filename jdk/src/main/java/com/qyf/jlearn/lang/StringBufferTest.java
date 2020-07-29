@@ -4,6 +4,9 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * 类描述：
+ * StringBuffer不论运行多少次长度都固定
+ * StringBuilder绝大多数情况长度可能会不固定
+ * StringBuffer线程安全，StringBuilder线程不安全得到证明
  *
  * @author qinyifeng
  * @version v1.0
@@ -14,46 +17,8 @@ public class StringBufferTest {
     public static void main(String[] args) {
         // 测试append
         //testAppend();
-        testAppend2();
-
-        /*
-         * 声明个字符串s，用下划线和井号是因为两个比较好区分。 分别实例化sf和sd两个对象
-         */
-        String s = "####____";
-        StringBuffer sf = new StringBuffer(s);
-        StringBuilder sd = new StringBuilder(s);
-
-        new Thread(() -> {
-            for (int i = 0; i < 100; i++) {
-                /*
-                 * 似乎sleep一小段效果会好一些 奇奇怪怪的输出格式只是为了便于比较
-                 */
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                sd.reverse();
-                //System.out.println("BUFFER->" + s);
-            }
-        }).start();
-
-        new Thread(() -> {
-            for (int i = 0; i < 100; i++) {
-                /*
-                 * 似乎sleep一小段效果会好一些 奇奇怪怪的输出格式只是为了便于比较
-                 */
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                sd.reverse();
-                //System.out.println("BUFFER->" + s);
-            }
-        }).start();
-
-
+        //testAppend2();
+        testAppend3();
     }
 
     /**
@@ -148,6 +113,38 @@ public class StringBufferTest {
             System.out.println("stringBuffer: " + stringBuffer.length());
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 测试append3
+     * 声明个字符串s，用下划线和井号是因为两个比较好区分。 分别实例化sf和sd两个对象
+     * 看一下控制台的输出会发现反转后出现井号和下划线交错的都是StringBuilder的
+     * StringBuffer：只会输出####____或者____####
+     * StringBuilder：可能输出正常的，也可能输出异常的，诸如：__##__##、##__##__、#_##__#_、_#__##_#
+     */
+    private static void testAppend3() {
+        String s = "####____";
+        StringBuffer sbf = new StringBuffer(s);
+        StringBuilder sd = new StringBuilder(s);
+
+        for (int i = 0; i < 2; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < 1000; j++) {
+                    /*
+                     * 似乎sleep一小段效果会好一些 奇奇怪怪的输出格式只是为了便于比较
+                     */
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    sbf.reverse();
+                    sd.reverse();
+                    //System.out.println("BUFFER->" + sbf);
+                    System.out.println("        " + sd + "<-builder");
+                }
+            }).start();
         }
     }
 }
