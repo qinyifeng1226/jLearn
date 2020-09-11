@@ -7,13 +7,13 @@
 3) AbstractStringBuilder 1   ====OK
 4) StringBuffer 1            ====OK
 5) StringBuilder 1           ====OK
-6) Boolean 2
-7) Byte 2
-8) Double 2
-9) Float 2
-10) Integer 2
-11) Long 2
-12) Short 2
+6) Boolean 2                 ====OK
+7) Byte 2                    ====OK
+8) Double 2                  ====OK
+9) Float 2                   ====OK
+10) Integer 2                ====OK
+11) Long 2                   ====OK
+12) Short 2                  ====OK
 13) Thread 2
 14) ThreadLocal 2
 15) Enum 3
@@ -27,6 +27,7 @@
 22) System 4
 23) Package 4
 24) Void 4
+25) Character
 
 
 
@@ -38,7 +39,7 @@
 4) ArrayList 1     ====OK
 5) LinkedList 1    ====OK
 6) HashMap 1       ====OK
-7) Hashtable 1
+7) Hashtable 1     ====OK
 8) HashSet 1
 9) LinkedHashMap 1
 10) LinkedHashSet 1

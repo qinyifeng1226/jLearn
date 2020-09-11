@@ -25,6 +25,18 @@ public class ReservedWordTest {
         // final修饰符不能修改其指向地址，可以改变指向地址对象的内容
         //value2=null;
         System.out.println(String.valueOf(value2));
+
+        final boolean value;
+        value = true;
+        //value = false; 只能被赋值一次
+        System.out.println(value);
+
+        // Boolean.FALSE是final修饰，不能修改，但是可以修改f指向新的地址
+        Boolean f = Boolean.valueOf(false);
+        f = true;
+        final Boolean f2 = Boolean.FALSE;
+        System.out.println(f2);
+        //f2=true; // 只能被赋值一次
     }
 
     public static void main(String[] args) {

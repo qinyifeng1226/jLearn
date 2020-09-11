@@ -15,8 +15,9 @@ public class HashCodeMean {
         int numberExist = 0;
 
         //证明hashcode的值不是内存地址
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 1000; i++) {
             Object obj = new Object();
+            //System.out.println(obj.hashCode());
             if (list.contains(obj.toString())) {
                 System.out.println(obj.toString() + "  exists in the list. " + i);
                 numberExist++;
@@ -31,7 +32,7 @@ public class HashCodeMean {
         //证明内存地址是不同的。
         numberExist = 0;
         list.clear();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 1000; i++) {
             Object obj = new Object();
             if (list.contains(obj)) {
                 System.out.println(obj + "  exists in the list. " + i);
@@ -43,5 +44,7 @@ public class HashCodeMean {
 
         System.out.println("repetition number:" + numberExist);
         System.out.println("list size:" + list.size());
+
+        //System.out.println(new Double(22222).hashCode());
     }
 }
