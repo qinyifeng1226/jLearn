@@ -219,11 +219,38 @@ public class CollectorsTest {
         LongSummaryStatistics longSummary = list.stream().limit(4).collect(Collectors.summarizingLong(Long::valueOf));
         DoubleSummaryStatistics doubleSummary = list.stream().limit(3).collect(Collectors.summarizingDouble(Double::valueOf));
         System.out.println(intSummary.toString() + "\n" + longSummary.toString() + "\n" + doubleSummary.toString());
+
+        List<Integer> list2= Arrays.asList(123, 456, 789, 1101,50000);
+        IntSummaryStatistics intSummary2 = list2.stream().limit(4).collect(Collectors.summarizingInt(Integer::intValue));
+        System.out.println(intSummary2.toString());
     }
 
     public static void main(String[] args) {
         List<String> list = Arrays.asList("123", "456", "789", "1101", "212121121", "asdaa", "3e3e3e", "2321eew");
+        list.forEach(System.out::println);
         //toMapTest(list);
         summarizingTest(list);
+
+        Random random = new Random();
+        random.ints().limit(5).sorted().forEach(System.out::println);
+
+        List<Integer> numbers = Arrays.asList(3, 2, 2, 3, 7, 3, 5);
+        // 获取对应的平方数
+        List<Integer> squaresList = numbers.stream().map( i -> i*i).distinct().collect(Collectors.toList());
+        System.out.println(squaresList);
+
+        List<String>strings = Arrays.asList("abc", "", "bc", "efg", "abcd","", "jkl");
+        // 获取空字符串的数量
+        long count = strings.stream().filter(string -> string.isEmpty()).count();
+        System.out.println(count);
+
+        count = strings.parallelStream().filter(string -> !string.isEmpty()).count();
+        System.out.println(count);
+
+        IntSummaryStatistics stats = numbers.stream().mapToInt((x) -> x).summaryStatistics();
+        System.out.println("列表中最大的数 : " + stats.getMax());
+        System.out.println("列表中最小的数 : " + stats.getMin());
+        System.out.println("所有数之和 : " + stats.getSum());
+        System.out.println("平均数 : " + stats.getAverage());
     }
 }
