@@ -136,7 +136,7 @@ public class ArrayListTest {
         //此时结果：c:4-6,b:0-4,a:6-9
         Spliterator<String> d = a.trySplit();
         //此时结果：d:6-7,c:4-6,b:0-4,a:7-9
-
+        a.forEachRemaining(o->System.out.println(o));
     }
 
     /**
