@@ -1,8 +1,12 @@
 package com.qyf.jlearn.lang;
 
+import sun.swing.BakedArrayList;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 类描述：
@@ -87,6 +91,24 @@ public class ClassTest {
         }
         //获取默认构造方法
         System.out.println("getConstructor：" + cls.getConstructor().toString());
+
+        /**
+         * isAssignableFrom() ：是从类继承的角度去判断，是判断是否为某个类的父类。
+         * 父类.class.isAssignableFrom(子类.class)
+         */
+        System.out.println(ArrayList.class.isAssignableFrom(Object.class));  //false
+        System.out.println(List.class.isAssignableFrom(ArrayList.class));  //true
+        System.out.println(ArrayList.class.isAssignableFrom(BakedArrayList.class));  //true
+        System.out.println(Object.class.isAssignableFrom(ArrayList.class));  //true
+
+        /**
+         * instanceof：关键字是从实例继承的角度去判断，instanceof关键字是判断是否某个类的子类。
+         * 使用方法：
+         * 子类实例 instanceof 父类类型
+         * instanceof关键字两个参数，前一个为类的实例，后一个为其本身或者父类的类型。
+         */
+        List arrayList = new ArrayList();
+        System.out.println(arrayList instanceof List);//true
 
     }
 }
