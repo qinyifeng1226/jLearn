@@ -14,9 +14,7 @@ import java.util.function.Supplier;
  */
 public class Collectors {
 
-    public static <T>
-
-    Collector<T, List<T>> toList() {
+    public static <T> Collector<T, List<T>> toList() {
 
         return new Collector<T, List<T>>() {
 

@@ -13,11 +13,17 @@ public interface Spliterator<T> {
 
     /**
      * 遍历并处理数据源的元素
+     *
      * @param action
      */
 
-    void forEachRemaining(Consumer<? super T> action) ;
+    void forEachRemaining(Consumer<? super T> action);
 
+    /**
+     * 剩余元素个数
+     *
+     * @return
+     */
     long estimateSize();
 
 }
