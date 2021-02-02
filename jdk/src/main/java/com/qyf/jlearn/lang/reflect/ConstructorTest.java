@@ -42,7 +42,7 @@ public class ConstructorTest {
         System.out.println("===============================================");
         //获取带参数的构造函数
         Constructor constructor2 = cls.getConstructor(new Class[]{int.class, String.class});
-        System.out.println("getTypeParameters: " + constructor1.getTypeParameters());
+        System.out.println("getTypeParameters: " + constructor2.getTypeParameters());
 
         //获得File类的Constructor对象
         Constructor constructor3 = ConstructorDemo.class.getDeclaredConstructor(new Class[]{int.class});

@@ -1,0 +1,62 @@
+二、线程状态
+NEW 状态是指线程刚创建, 尚未启动
+RUNNABLE 状态是线程正在正常运行中, 当然可能会有某种耗时计算/IO等待的操作/CPU时间片切换等, 这个状态下发生的等待一般是其他系统资源, 而不是锁, Sleep等
+BLOCKED 这个状态下, 是在多个线程有同步操作的场景, 这个事件将在另一个线程放弃了这个锁的时候发生,也就是这里是线程在等待进入临界区
+WAITING（无线等待） 这个状态下是指线程拥有了某个锁之后, 调用了他的wait方法, 等待其他线程/锁拥有者调用 notify / notifyAll 一遍该线程可以继续下一步操作, 这里要区分 BLOCKED 和 WATING 的区别, 一个是在临界点外面等待进入, 一个是在临界点里面wait等待别人notify, 线程调用了join方法 join了另外的线程的时候, 也会进入WAITING状态, 等待被他join的线程执行结束
+TIMED_WAITING 这个状态就是有限的(时间限制)的WAITING, 一般出现在调用wait(long), join(long)等情况下, 另外一个线程sleep后, 也会进入TIMED_WAITING状态
+TERMINATED 这个状态下表示 该线程的run方法已经执行完毕了, 基本上就等于死亡了(当时如果线程被持久持有, 可能不会被回收)
+
+六、总结
+（1）线程复用
+
+像线程池类高效的原因在于，线程池中的线程在完成任务后，不会销毁，而且缓存起来，每当用户请求一个线程处理任务时，线程池可以利用缓存的空闲线程来处理用户任务，这样避免了线程创建销毁带来的开销。
+
+在Thread类中有一个Runnable target的域，只需将target替换成新的Runnable即可。
+
+（2）wait()和notify/notifyAll()方法
+
+wait()方法
+
+线程进入WAITING状态，并且释放掉它所占有的“锁标志”，从而使别的线程有机会抢占该锁，等待其他线程调用“锁标志“对象的notify或notifyAll方法恢复
+wait方法是一个本地方法，其底层是通过一个叫做监视器锁的对象来完成的，所以调用wait方式时必须获取到monitor对象的所有权即通过Synchronized关键字，否则抛出IllegalMonitorStateException异常
+notify/notifyAll()方法
+
+在同一对象上去调用notify/notifyAll方法，就可以唤醒对应对象monitor上等待的线程了。notify和notifyAll的区别在于前者只能唤醒monitor上的一个线程，对其他线程没有影响，而notifyAll则唤醒所有的线程
+（3）sleep/yield/join方法解析
+
+sleep
+
+sleep方法的作用是让当前线程暂停指定的时间（毫秒）
+wait方法依赖于同步，而sleep方法可以直接调用
+sleep方法只是暂时让出CPU的执行权，并不释放锁。而wait方法则需要释放锁
+yield
+
+yield方法的作用是暂停当前线程，以便其他线程有机会执行，不过不能指定暂停的时间，并且也不能保证当前线程马上停止
+yield只能使同优先级或更高优先级的线程有执行的机会
+join
+
+等待调用join方法的线程结束，再继续执行。如：t.join()，主要用于等待t线程运行结束
+作用是父线程等待子线程执行完成后再执行，换句话说就是将异步执行的线程合并为同步的线程
+（4）不推荐使用方法解释
+
+参考：Why Are Thread.stop, Thread.suspend, Thread.resume and Runtime.runFinalizersOnExit Deprecated?
+
+suspend()和resume()
+
+这两个方法是配套使用的，suspend()是暂停线程，但并不释放资源，容易造成死锁情况
+stop()
+
+因为调用stop会使线程释放所有的锁，导致不安全情况，在调用stop时候，由锁保护的临界区可能处于状态不一致的情况，这不一致状态将暴露给其他线程
+推荐的做法是，维护一个状态变量，当线程需要停止时更改这一状态变量，该线程应检查这一状态变量，看该线程是否应该终止了
+（5）关于interrupt()中断函数
+
+其实调用这个函数并不是真的中断线程，这个函数只是将Thread中的interrupt标志设置为true，用户需自行检测这一变量，停止线程，这种做法避免了stop带来的问题
+（6）更深入学习
+
+Thread类中有许多native方法，更深入的学习后续还需研究研究jvm的源码
+
+
+
+https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzI4Njg5MDA5NA==&action=getalbum&album_id=1337032720056418304&subscene=159&subscene=&scenenote=https%3A%2F%2Fmp.weixin.qq.com%2Fs%3F__biz%3DMzI4Njg5MDA5NA%3D%3D%26mid%3D2247484186%26idx%3D1%26sn%3D2a7b937e6d3b1623aceac199d3e402f9%26chksm%3Debd7421bdca0cb0d6206db8c7f063c884c3f0b285975c8e896fde424660b4ccb88da1549f32c%23rd#wechat_redirect
+
+
