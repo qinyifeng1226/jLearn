@@ -7,6 +7,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * ReentrantLock 和synchronized 都是 可重入锁
  * 如果是同一个线程加锁，Sync#nonfairTryAcquire中获取的AQS状态state将自增，释放锁将自减
+ * <p>
+ * https://blog.csdn.net/xuanfuhuo4769/article/details/81483695
  *
  * @author qinyifeng
  * @version v1.0
