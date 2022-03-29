@@ -25,14 +25,27 @@ import java.util.Objects;
  * @since 2020/5/14 18:22
  */
 public class Person implements Cloneable {
-    private int age;
+    private Integer age;
     private String name;
     private Date birth;
 
-    public Person(int a, String n, Date b) {
+    public Person(Integer age, String name) {
+        this.age = age;
+        this.name = name;
+    }
+
+    public Person(Integer a, String n, Date b) {
         age = a;
         name = n;
         birth = b;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     public Date getBirth() {

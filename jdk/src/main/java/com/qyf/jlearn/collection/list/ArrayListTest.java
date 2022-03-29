@@ -2,9 +2,11 @@ package com.qyf.jlearn.collection.list;
 
 import com.qyf.jlearn.object.clone.A;
 import com.qyf.jlearn.object.clone.B;
+import com.qyf.jlearn.object.clone.Person;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * 类描述：
@@ -136,7 +138,7 @@ public class ArrayListTest {
         //此时结果：c:4-6,b:0-4,a:6-9
         Spliterator<String> d = a.trySplit();
         //此时结果：d:6-7,c:4-6,b:0-4,a:7-9
-        a.forEachRemaining(o->System.out.println(o));
+        a.forEachRemaining(o -> System.out.println(o));
     }
 
     /**
@@ -224,9 +226,45 @@ public class ArrayListTest {
         System.out.println(d);
     }
 
+    private static void sortTest() {
+        List<Person> list = new ArrayList<>();
+        Person s1 = new Person(30, "zhangsan");
+        list.add(s1);
+        Person s2 = new Person(29, "lisi");
+        list.add(s2);
+        Person s3 = new Person(31, "wangwu");
+        list.add(s3);
+        list.stream().forEach(System.out::println);
+        System.out.println();
+
+        // 默认升序
+        List<Person> sortList1 = list.stream().sorted((a, b) -> a.getAge().compareTo(b.getAge())).collect(Collectors.toList());
+        sortList1.stream().forEach(System.out::println);
+        System.out.println();
+        assert sortList1.get(0).getAge() == 29;
+
+        // 降序
+        List<Person> sortList2 = list.stream().sorted((a, b) -> b.getAge().compareTo(a.getAge())).collect(Collectors.toList());
+        sortList2.stream().forEach(System.out::println);
+        System.out.println();
+        assert sortList1.get(0).getAge() == 31;
+
+        // 默认升序
+        list.sort(Comparator.comparing(Person::getAge));
+        list.stream().forEach(System.out::println);
+        System.out.println();
+        assert list.get(0).getAge() == 29;
+
+        // 降序
+        list.sort(Comparator.comparing(Person::getAge).reversed());
+        list.stream().forEach(System.out::println);
+        assert list.get(0).getAge() == 31;
+    }
+
     public static void main(String[] args) {
-        addTest();
-        cloneTest();
+//        addTest();
+//        cloneTest();
+        sortTest();
     }
 
 
